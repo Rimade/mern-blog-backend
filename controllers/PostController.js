@@ -2,12 +2,15 @@ import PostModel from '../models/Post.js';
 
 export const getLastTags = async (req, res) => {
 	try {
-		const posts = await PostModel.find().limit(5).exec();
+		const posts = await PostModel.find()
+			.limit(5)
+			.sort({ viewsCount: 1 })
+			.exec();
 
 		const tags = posts
 			.map((obj) => obj.tags)
 			.flat()
-			.slice(0, 5);
+			.slice(0, 7);
 
 		res.json(tags);
 	} catch (error) {
@@ -20,7 +23,13 @@ export const getLastTags = async (req, res) => {
 
 export const getAll = async (req, res) => {
 	try {
-		const posts = await PostModel.find().populate('user').exec();
+		const sortBy = req.query.sortBy || 'new'; // Default sort by new
+		const sortOrder =
+			sortBy === 'popular' ? { viewsCount: -1 } : { createdAt: -1 };
+		const posts = await PostModel.find()
+			.sort(sortOrder)
+			.populate('user')
+			.exec();
 
 		res.json(posts);
 	} catch (error) {
